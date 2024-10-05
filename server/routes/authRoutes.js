@@ -7,7 +7,8 @@ const {
   getCurrentUser,
   sendOtp,
   verifyOtp,
-  googleLogin
+  googleLogin,
+  refreshToken
 } = require("../controllers/authController");
 const authorization = require("../middlewares/authorization");
 
@@ -18,5 +19,6 @@ router.post('/google-login', googleLogin);
 
 router.post('/send-otp',sendOtp);
 router.post('/verify-otp',verifyOtp);
+router.post('/refresh',refreshToken);
 
 module.exports = router;
