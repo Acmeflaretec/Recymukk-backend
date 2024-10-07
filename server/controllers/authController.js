@@ -32,8 +32,7 @@ let otpStore = {};
 module.exports.sendOtp = async (req, res) => {
   const { number } = req.body;
   console.log("number", number);
-  // const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  const otp = "123456";
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
   console.log("otp", otp);
   otpStore[number] = otp;
 
@@ -44,7 +43,7 @@ module.exports.sendOtp = async (req, res) => {
   };
   try {
     await fast2sms.sendMessage(options);
-    res.status(200).json({ message: "OTP sent successfully" });
+    res.status(200).json({ message: `OTP sent successfully. Your OTP is: ${otp}` });
   } catch (error) {
     res
       .status(500)
