@@ -13,7 +13,11 @@ const getSections = async (req, res) => {
 
 const getStoreSections = async (req, res) => {
    try {
-      const data = await Section.find({ status: true }).populate('product')
+      const data = await Section.find({ status: true })
+         .populate({
+            path: 'product',
+            populate: { path: 'category' }
+         });
       res.status(200).json({ data })
    } catch (error) {
       console.log(error);
