@@ -1,7 +1,19 @@
 const Order = require('../models/order')
 const User = require('../models/user');
 const Product = require('../models/product');
-const Address = require('../models/address');
+const Address = require('../models/address');   
+const nodemailer = require('nodemailer');      
+const moment = require('moment-timezone');
+const dotenv = require('dotenv');
+dotenv.config();
+
+const transporter = nodemailer.createTransport({
+  service: 'Gmail',
+  auth: {
+    user: process.env.EMAIL_AUTH_USER,
+    pass: process.env.EMAIL_AUTH_PASS,
+  },
+});  
 
 const getOrders = async (req, res) => {
   try {
@@ -106,17 +118,16 @@ const getOrderById = async (req, res) => {
 const createOrder = async (req, res) => {
   const { _id } = req?.decoded
 
-  const { payment_mode, amount, address, products, couponId } = req?.body
-  console.log('payment_mode, amount, address, products,couponId', payment_mode, amount, address, products, couponId);
+  const { payment_mode, amount, address, products, couponId,delivery_days } = req?.body
+  console.log('payment_mode, amount, address, products,couponId,delivery_days', payment_mode, amount, address, products, couponId,delivery_days);
 
   try {
-    const data = await Order.create({ userId: _id, payment_mode, amount, address, products })
-    console.log('prod qty findings ', products.item)
-
+    const data = await Order.create({ userId: _id, payment_mode, amount, address, products,delivery_days })
 
     const user = await User.findById(_id);
     user.cart.item = [];
     user.cart.totalPrice = 0;
+    user.orderCount +=1
 
     if (couponId) {
       if (user.coupons.includes(couponId)) {
@@ -151,6 +162,100 @@ const createOrder = async (req, res) => {
       }
 
     }
+
+
+    const productDetails = await Order.findById(data._id) 
+            .populate({
+                path: 'products.item.product_id', 
+                model: 'Product'                    
+            })
+
+    const orderNumber = productDetails._id;
+    const orderTime = moment().tz('Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
+    const adminEmail = process.env.EMAIL_ADMIN;
+
+    const emailSubject = `Your Nila Trends Order ID is:${orderNumber}`;
+
+    const productItems =  productDetails.products.item.map(item => `
+      <tr>
+        <td>${item.product_id.name}</td>
+        <td>${item.qty}</td>
+        <td>${item.size}</td>
+        <td>₹${item.price}</td>
+      </tr>
+    `).join('');
+
+    const customerEmailHtml = `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+        <h1 style="color: #4CAF50;">Order Received</h1>
+        <p>Dear ${productDetails?.address?.firstname} ${productDetails?.address?.lastname},</p>
+        <p>Thank you for your order. </p>
+        <p>Here are your order details:</p>
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="background-color: #f2f2f2;">
+              <th style="padding: 8px; border: 1px solid #ddd;">Product Name</th>
+              <th style="padding: 8px; border: 1px solid #ddd;">Quantity</th>
+              <th style="padding: 8px; border: 1px solid #ddd;">Size</th>
+              <th style="padding: 8px; border: 1px solid #ddd;">Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${productItems}
+          </tbody>
+        </table>
+        <p><strong>Total Amount:</strong> ₹${productDetails?.amount}</p>
+        <p><strong>Order Date and Time (IST):</strong> ${orderTime}</p>   
+        <p>We will notify you once your order is shipped.</p>
+        <p>Thank you for shopping with us!</p>
+        <p>Best Regards,<br>Melon Magnets</p>
+      </div>
+    `;
+
+    const internalEmailHtml = `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+        <h1 style="color: #4CAF50;">Order Received</h1>
+        <p>New order has been placed by <b>${productDetails?.address?.firstname} ${productDetails?.address?.lastname}</b> at ${orderTime}.</p>
+        <p><strong>Email:</strong> ${productDetails?.address?.email}</p>
+        <p><strong>Phone:</strong> ${productDetails?.address?.mobile}</p>
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="background-color: #f2f2f2;">
+              <th style="padding: 8px; border: 1px solid #ddd;">Product Name</th>
+              <th style="padding: 8px; border: 1px solid #ddd;">Quantity</th>
+              <th style="padding: 8px; border: 1px solid #ddd;">Size</th>
+              <th style="padding: 8px; border: 1px solid #ddd;">Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${productItems}
+          </tbody>
+        </table>
+        <p><strong>Total Amount:</strong> ₹${productDetails?.amount}</p>
+        <p>For more details, <a href="https://admin.nilaatrends.com//#/orders/editOrder/${productDetails?._id}" target="_blank">Click here</a>.</p>
+      </div>
+    `;
+
+console.log('productDetails?.address?.email',productDetails?.address?.email);
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_AUTH_USER,
+      to: productDetails?.address?.email,
+      subject: emailSubject,
+      html: customerEmailHtml,
+    });
+
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_AUTH_USER,
+      to: adminEmail,
+      subject: emailSubject,
+      html: internalEmailHtml,
+    });
+
+
+
+
 
     res.status(201).json({ user, message: 'Order placed successfully' });
   } catch (error) {

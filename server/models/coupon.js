@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
-const couponSchema = new Schema({    
+const couponSchema = new Schema({
   name: {
     type: String,
     required: true
@@ -30,10 +30,18 @@ const couponSchema = new Schema({
     type: Boolean,
     default: true
   },
-  coincoupon: {
-    type: Boolean,
-    default: false
-  },
+  products: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Product',
+    }
+  ],
+  categorys: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Category',
+    }
+  ],
 },
   {
     timestamps: true

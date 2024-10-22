@@ -25,6 +25,12 @@ const categorySchema = new mongoose.Schema({
       type: Boolean,
       default: false
    },
+   coupons: [
+      {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Coupon',
+      }
+  ],
 },
    {
       timestamps: true

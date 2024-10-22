@@ -29,6 +29,10 @@ const orderSchema = new mongoose.Schema({
             type: String,
             required: true
         },
+        email: {
+            type: String,
+            required: true
+        },
         country: {
             type: String,
             required: true
@@ -92,6 +96,9 @@ const orderSchema = new mongoose.Schema({
     offer: {
         type: String,
         default: "None"
+    },
+    delivery_days: {
+        type: String,
     }
 },
     {
