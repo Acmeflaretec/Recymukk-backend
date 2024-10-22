@@ -45,6 +45,10 @@ const userSchema = mongoose.Schema({
             size: {
                 type: String,
             },
+            coupon: {
+                type: mongoose.Types.ObjectId,
+                ref: 'Coupon'
+            },
             price: {
                 type: Number
             },
@@ -65,6 +69,10 @@ const userSchema = mongoose.Schema({
         type: Number,
         default: 0
     },
+    orderCount: {
+        type: Number,
+        default: 0
+    },
     coupons: [{
         type: mongoose.Types.ObjectId,
         ref: 'Coupon'
@@ -75,13 +83,14 @@ const userSchema = mongoose.Schema({
     })
 
 userSchema.methods.updateCart = async function (id, qty, size) {
+
     const cart = this.cart;
     const product = await Product.findById(id);
 
     const index = cart.item.findIndex((objInItems) => {
         return (
             size ? new String(objInItems.productId).trim() === new String(product._id).trim() &&
-                objInItems.size === size : new String(objInItems.productId).trim() == new String(product._id).trim()
+                objInItems.size === size : new String(objInItems.productId).trim() === new String(product._id).trim()
         );
     });
 
@@ -101,7 +110,7 @@ userSchema.methods.updateCart = async function (id, qty, size) {
     return cart.totalPrice;
 };
 
-userSchema.methods.addToCart = async function (product, size) {
+userSchema.methods.addToCart = async function (product, size, coupon) {
     const wishlist = this.wishlist;
     const isExist = wishlist.filter((item) => item === product._id);
     if (isExist.length) {
@@ -119,17 +128,25 @@ userSchema.methods.addToCart = async function (product, size) {
 
     if (isExisting >= 0) {
         cart.item[isExisting].qty += 1;
+        if (coupon) {
+            cart.item[isExisting].coupon = coupon;
+        } else {
+            cart.item[isExisting].coupon = null;
+        }
+
     } else {
         size ? cart.item.push({
             productId: product._id,
             qty: 1,
             size: size || "",
             price: product.price,
+            coupon: coupon || null
         }) :
             cart.item.push({
                 productId: product._id,
                 qty: 1,
                 price: product.price,
+                coupon: coupon || null
             })
     }
     cart.totalPrice += product.price;
@@ -178,8 +195,8 @@ userSchema.statics.getWishlistWithProductsByUserId = async function (userId) {
         const user = await this.findById(userId).populate({
             path: 'wishlist',
             populate: {
-                path: 'category', 
-                model: 'Category', 
+                path: 'category',
+                model: 'Category',
             }
         });
 
@@ -193,7 +210,7 @@ userSchema.statics.getWishlistWithProductsByUserId = async function (userId) {
 
 userSchema.statics.getCartWithProductsByUserId = async function (userId) {
     try {
-        const user = await this.findById(userId).populate("cart.item.productId");
+        const user = await this.findById(userId).populate("cart.item.productId").populate('cart.item.coupon');
 
         return user?.cart;
     } catch (error) {

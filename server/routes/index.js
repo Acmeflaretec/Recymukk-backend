@@ -10,6 +10,7 @@ const blogRoutes = require('./blogRoutes');
 const tagRoutes = require('./tagRoutes');
 const sectionRoutes = require('./sectionRoutes');
 const couponRoutes = require('./couponRoutes');
+const reviewRoutes = require('./reviewRoutes')
 
 const router = express.Router();
 
@@ -24,5 +25,6 @@ router.use('/v1/banners', bannerRoutes);
 router.use('/v1/tags', tagRoutes);
 router.use('/v1/blogs', blogRoutes);
 router.use('/v1/section', sectionRoutes);
+router.use('/v1/reviews', reviewRoutes);
 
 module.exports = router;

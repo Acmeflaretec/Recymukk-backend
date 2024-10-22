@@ -9,6 +9,14 @@ const getCategory = async (req, res) => {
     console.log(error);
   }
 };
+const getCategoryName = async (req, res) => {
+  try {
+    const data = await Category.find({isAvailable:true}).select('name');
+    res.status(200).json({ data })
+  } catch (error) {
+    console.log(error);
+  }
+};
 const getHomeCategory = async (req, res) => {
   try {
     const data = await Category.find({isAvailable:true,isImportant:true})
@@ -131,5 +139,6 @@ module.exports = {
     updateCategory,
     getCategoryById,
     getadminCategory,
-    getHomeCategory
+    getHomeCategory,
+    getCategoryName
   }

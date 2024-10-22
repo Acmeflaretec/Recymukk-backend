@@ -40,24 +40,25 @@ const productSchema = new mongoose.Schema({
     },
     discount: {
         type: Number,
+        default: 0
     },
     sale_rate: {
         type: Number,
         required: true
     },
-    feature:{
-        type:[String]
+    feature: {
+        type: [String]
     },
-    spec:{
-        type:[String]
+    spec: {
+        type: [String]
     },
-    fitAndCare:{
-        type:[String]
+    fitAndCare: {
+        type: [String]
     },
-    sizes:[{    
+    sizes: [{
         sizes: String,
         quantity: String
-      }],
+    }],
     image: {
         type: Array,
         required: true
@@ -70,25 +71,46 @@ const productSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    reviews: {
-        type: Array   
-    },
+    reviews:  [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Review'
+    }],
     variantProduct: [
         {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'Product',
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Product',
         }
-      ],
+    ],
     similarProduct: [
         {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'Product',
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Product',
         }
-      ],
+    ],
+    coupons: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Coupon',
+        }
+    ],
 },
     {
         timestamps: true
-    })
+    });
 
-    productSchema.plugin(mongoosePaginate);
+    productSchema.methods.calculateDiscount = function () {
+        if (this.sale_rate && this.price) {
+            this.discount = ((this.price - this.sale_rate) / this.price) * 100;
+        } else {
+            this.discount = 0; 
+        }
+    };
+    
+    productSchema.pre('save', function(next) {
+        this.calculateDiscount(); 
+        next(); 
+    });
+    
+
+productSchema.plugin(mongoosePaginate);
 module.exports = mongoose.model('Product', productSchema)
