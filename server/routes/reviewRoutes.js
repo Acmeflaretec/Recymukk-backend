@@ -7,7 +7,6 @@ const { upload } = require('../middlewares/multer');
 
 
 const router = express.Router();
-console.log('sfdafd'); 
 router.post('/',upload.array('images', 10), createReview);
 router.get('/admin', getAdminReview)
 router.get('/:productId', getReviewsByProductId);
