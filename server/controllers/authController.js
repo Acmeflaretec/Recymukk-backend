@@ -52,26 +52,19 @@ module.exports.sendOtp = async (req, res) => {
 };
 
 module.exports.verifyOtp = async (req, res) => {
-  const { number, otp, referrerId } = req.body;
-  console.log("number, otp,referrerId", number, otp, referrerId);
+  const { number, otp } = req.body;
+  console.log("number, otp", number, otp);
 
   if (otpStore[number] !== otp) {
     return res.status(400).json({ message: "Invalid OTP" });
   }
 
   let user = await User.findOne({ phone: number });
-
+  let newUser = false;
   if (!user) {
     user = new User({ phone: number });
-    user.wallet += 500;
-    if (referrerId) {
-      const referrer = await User.findById(referrerId);
-      if (referrer) {
-        referrer.wallet += 100;
-        await referrer.save();
-      }
-    }
-    await user.save();
+    await user.save();  
+    newUser = true;
   }
   //    else{
   //     console.log('userCoupons-',user.coupons);
@@ -95,7 +88,7 @@ module.exports.verifyOtp = async (req, res) => {
 
   res.status(200).json({
     message: "Login successful",
-    data: { token: { accessToken, refreshToken }, user },
+    data: { token: { accessToken, refreshToken }, user,newUser },
   });
 };
 

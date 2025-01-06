@@ -11,8 +11,8 @@ const app = express();
 const corsOptions = {   
   origin: [process.env.ADMIN_PORT_LOCAL,process.env.CLIENT_PORT_LOCAL],
   credentials: true,       
-};         
-
+};          
+       
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, ('./public'))))
