@@ -11,7 +11,7 @@ router.put('/update-status', updateUserStatus);
 router.use(authorization)
 router.get('/', getUser);
 router.post('/',upload.single('profile'),updateUser);
-router.patch('/userDetails', updateUserProfile);
+router.patch('/userDetails',upload.single('profile'), updateUserProfile);
 router.patch('/updateQty', updateQty);    
 router.patch('/addToCart/:id', addToCart);
 router.patch('/removeFromCart/:id', removeFromCart);

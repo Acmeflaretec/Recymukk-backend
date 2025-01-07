@@ -1,6 +1,19 @@
 const mongoose = require('mongoose')
 const mongoosePaginate = require('mongoose-paginate-v2');
 
+
+const statusHistorySchema = new mongoose.Schema({
+    status: {
+        type: String,
+        enum: ["Pending", "Placed", "Shipped", "Out for delivery", "Delivered", "Delayed", "Canceled", "Returned"],
+        required: true
+    },
+    timestamp: {
+        type: Date,
+        default: Date.now
+    }
+});
+
 const orderSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Types.ObjectId,
@@ -9,7 +22,7 @@ const orderSchema = new mongoose.Schema({
     },
     payment_mode: {
         type: String,
-        required: true  
+        required: true
     },
     amount: {
         type: Number,
@@ -62,10 +75,10 @@ const orderSchema = new mongoose.Schema({
         },
         mobile: {
             type: Number,
-            required: true 
+            required: true
         },
     },
-    products: {   
+    products: {
         item: [{
             product_id: {
                 type: mongoose.Types.ObjectId,
@@ -90,8 +103,12 @@ const orderSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["Pending", "Placed", "Shipped", "Out for delivery", "Delivered", "Delayed", "Canceled","Returned"],
+        enum: ["Pending", "Placed", "Shipped", "Out for delivery", "Delivered", "Delayed", "Canceled", "Returned"],
         default: "Placed"
+    },
+    statusHistory: {
+        type: [statusHistorySchema],
+        default: [{ status: "Placed", timestamp: Date.now() }]
     },
     offer: {
         type: String,

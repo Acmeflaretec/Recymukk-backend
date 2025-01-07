@@ -175,13 +175,20 @@ const updateUserProfile = async (req, res) => {
       console.log('user1.id',_id);
       
       const { name, email, phone } = req.body;
+      const updatedData = { email, username:name, phone };
+
+    if (req.file) {
+      updatedData.profile = `${req.file.filename}`;
+    }
       
 
-      const updatedUser = await User.findByIdAndUpdate(_id, {
-          username:name,
-          email,
-          phone,
-      }, { new: true });
+      // const updatedUser = await User.findByIdAndUpdate(_id, {
+      //     username:name,
+      //     email,
+      //     phone,
+      // }, { new: true });
+      const updatedUser = await User.findByIdAndUpdate(_id, updatedData, { new: true });
+    
 
       if (!updatedUser) {
           return res.status(404).json({ message: 'User not found' });
