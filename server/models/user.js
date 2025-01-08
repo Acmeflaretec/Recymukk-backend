@@ -172,10 +172,11 @@ userSchema.methods.removefromCart = async function (cartItemId, size) {
 userSchema.methods.addToWishlist = function (product) {
 
     const wishlist = this.wishlist;
+    
 
     const isExisting = wishlist.filter((x) => x == product);
     if (!isExisting.length) {
-        wishlist.push(product);
+        wishlist.push(product?._id);
     }
 
     return this.save();
@@ -186,7 +187,7 @@ userSchema.methods.removefromWishlist = async function (id) {
 
     this.wishlist = this.wishlist.filter((x) => x.toString() !== id);
 
-    return await this.save();
+    return await this.save(); 
 };
 
 

@@ -1,8 +1,8 @@
 const Order = require('../models/order')
 const User = require('../models/user');
 const Product = require('../models/product');
-const Address = require('../models/address');   
-const nodemailer = require('nodemailer');      
+const Address = require('../models/address');
+const nodemailer = require('nodemailer');
 const moment = require('moment-timezone');
 const dotenv = require('dotenv');
 dotenv.config();
@@ -13,7 +13,7 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_AUTH_USER,
     pass: process.env.EMAIL_AUTH_PASS,
   },
-});  
+});
 
 const getOrders = async (req, res) => {
   try {
@@ -26,15 +26,15 @@ const getOrders = async (req, res) => {
 };
 const getClientOrders = async (req, res) => {
   console.log('getClientOrders');
-  
+
   try {
     const { _id } = req?.decoded
     const { status } = req.query;
-    console.log('status',status);
-    const data = await Order.find({ userId: _id ,status }).populate('products.item.product_id')
-    .populate('address')
-    .sort({ createdAt: -1 });   
-    console.log('order data',data);
+    console.log('status', status);
+    const data = await Order.find({ userId: _id, status }).populate('products.item.product_id')
+      .populate('address')
+      .sort({ createdAt: -1 });
+    console.log('order data', data);
     res.status(200).json({ data })
   } catch (error) {
     console.log(error);
@@ -118,16 +118,16 @@ const getOrderById = async (req, res) => {
 const createOrder = async (req, res) => {
   const { _id } = req?.decoded
 
-  const { payment_mode, amount, address, products, couponId,delivery_days } = req?.body
-  console.log('payment_mode, amount, address, products,couponId,delivery_days', payment_mode, amount, address, products, couponId,delivery_days);
+  const { payment_mode, amount, address, products, couponId, delivery_days } = req?.body
+  console.log('payment_mode, amount, address, products,couponId,delivery_days', payment_mode, amount, address, products, couponId, delivery_days);
 
   try {
-    const data = await Order.create({ userId: _id, payment_mode, amount, address, products,delivery_days })
+    const data = await Order.create({ userId: _id, payment_mode, amount, address, products, delivery_days })
 
     const user = await User.findById(_id);
     user.cart.item = [];
     user.cart.totalPrice = 0;
-    user.orderCount +=1
+    user.orderCount += 1
 
     if (couponId) {
       if (user.coupons.includes(couponId)) {
@@ -164,11 +164,11 @@ const createOrder = async (req, res) => {
     }
 
 
-    const productDetails = await Order.findById(data._id) 
-            .populate({
-                path: 'products.item.product_id', 
-                model: 'Product'                    
-            })
+    const productDetails = await Order.findById(data._id)
+      .populate({
+        path: 'products.item.product_id',
+        model: 'Product'
+      })
 
     const orderNumber = productDetails._id;
     const orderTime = moment().tz('Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
@@ -176,7 +176,7 @@ const createOrder = async (req, res) => {
 
     const emailSubject = `Your Nila Trends Order ID is:${orderNumber}`;
 
-    const productItems =  productDetails.products.item.map(item => `
+    const productItems = productDetails.products.item.map(item => `
       <tr>
         <td>${item.product_id.name}</td>
         <td>${item.qty}</td>
@@ -236,7 +236,7 @@ const createOrder = async (req, res) => {
       </div>
     `;
 
-console.log('productDetails?.address?.email',productDetails?.address?.email);
+    console.log('productDetails?.address?.email', productDetails?.address?.email);
 
     await transporter.sendMail({
       from: process.env.EMAIL_AUTH_USER,
@@ -288,6 +288,26 @@ const getReviewOrders = async (req, res) => {
   }
 };
 
+// const updateOrderStatus = async (req, res) => {
+//   const { orderId, newStatus } = req.body;
+//   console.log(orderId, newStatus);
+
+//   try {
+//     const order = await Order.findById(orderId);
+//     if (!order) {
+//       return res.status(404).json({ message: 'Order not found' });
+//     }
+
+//     order.status = newStatus;
+//     await order.save();
+
+//     res.status(200).json({ message: 'Order status updated successfully' });
+//   } catch (error) {
+//     console.log(error);
+//     return res.status(500).json({ message: error?.message ?? 'Something went wrong' });
+//   }
+// };
+
 const updateOrderStatus = async (req, res) => {
   const { orderId, newStatus } = req.body;
   console.log(orderId, newStatus);
@@ -298,23 +318,30 @@ const updateOrderStatus = async (req, res) => {
       return res.status(404).json({ message: 'Order not found' });
     }
 
+    const statusUpdate = {
+      status: newStatus,
+      timestamp: new Date()
+    };
+
     order.status = newStatus;
+    order.statusHistory.push(statusUpdate);
     await order.save();
 
-    res.status(200).json({ message: 'Order status updated successfully' });
+    res.status(200).json({ message: 'Order status updated successfully', statusHistory: order.statusHistory });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: error?.message ?? 'Something went wrong' });
   }
 };
+
 module.exports = {
   getOrders,
   getUserOrders,
-  createOrder,
-  updateOrder,
   getOrderById,
   getReviewOrders,
   getAdminOrders,
+  createOrder,
+  updateOrder,
   updateOrderStatus,
   getClientOrders
 }
