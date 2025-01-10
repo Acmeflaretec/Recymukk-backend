@@ -169,6 +169,13 @@ userSchema.methods.removefromCart = async function (cartItemId, size) {
     }
 };
 
+userSchema.methods.removeAllFromCart = async function () {
+    this.cart.item = [];
+    this.cart.totalPrice = 0; 
+    return await this.save(); 
+  };
+  
+
 userSchema.methods.addToWishlist = function (product) {
 
     const wishlist = this.wishlist;

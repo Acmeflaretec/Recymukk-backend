@@ -68,7 +68,7 @@ const updateUser = async (req, res) => {
   }
 };
      
-const updateQty = async (req, res) => {
+const  updateQty = async (req, res) => {
                
   try {   
     const { _id } = req?.decoded
@@ -257,6 +257,25 @@ const getWishLists = async (req, res) => {
 
 };
 
+const removeAllFromCart = async (req, res) => {
+  try {
+    const { _id } = req?.decoded;
+    const userData = await User.findById({ _id });
+
+    if (!userData) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    await userData.removeAllFromCart();
+
+    return res.status(200).json({ message: 'All items removed from cart' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: error?.message ?? 'Something went wrong' });
+  }
+};
+
+
 
 module.exports = {
     getUser,
@@ -267,9 +286,10 @@ module.exports = {
     addToWishlist,
     removeFromWishlist,
     updateUserProfile,
-    getCartDetailsByUserId,
     updateUserStatus,
     getWishLists,
-    updateUser
+    updateUser,
+    getCartDetailsByUserId,
+    removeAllFromCart
     
   }
