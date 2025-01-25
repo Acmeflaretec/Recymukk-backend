@@ -99,3 +99,16 @@ exports.getAllNotifications = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+exports.getClientNotifications = async (req, res) => {
+  try {
+    const notifications = await Notification.find({status:true});
+
+    res.status(200).json({
+      message: 'Notifications retrieved successfully',
+      data: notifications,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
