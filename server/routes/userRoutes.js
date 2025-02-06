@@ -2,7 +2,7 @@ const { Router } = require('express');
 const router = Router();
 const authorization = require("../middlewares/authorization");
 const { getUser, addToCart, removeFromCart, addToWishlist, removeFromWishlist, updateQty, getUsers,
-  getCartDetailsByUserId, updateUserProfile,updateUserStatus,getWishLists,updateUser,removeAllFromCart
+  getCartDetailsByUserId, updateUserProfile,updateUserStatus,getWishLists,updateUser,removeAllFromCart,deleteUser
 } = require('../controllers/userController');
 const { upload } = require('../middlewares/multer');
 
@@ -20,6 +20,8 @@ router.patch('/addToWishlist/:id', addToWishlist);
 router.patch('/removeFromWishlist/:id', removeFromWishlist);
 router.get('/getwishlist',authorization, getWishLists);
 router.get('/getcarts', authorization, getCartDetailsByUserId);
+router.delete("/", authorization, deleteUser);
+
 
 
 module.exports = router;
