@@ -183,9 +183,7 @@ const getCouponById = async (req, res) => {
 
 
 const validateCoupon = async (req, res) => {
-  console.log('validateCoupon');
   const { couponId, userDetails, salePriceIncludingDeliveryCharge } = req.body;
-  console.log('couponId, userId, subtotal', couponId, userDetails, salePriceIncludingDeliveryCharge);
   const id = userDetails?._id
   const coupon = await Coupon.findOne({ _id: couponId, status: true });
   try {

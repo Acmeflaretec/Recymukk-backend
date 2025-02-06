@@ -73,6 +73,10 @@ const userSchema = mongoose.Schema({
         type: Number,
         default: 0
     },
+    is_deleted: {
+        type: Boolean,
+        default: false
+    },
     coupons: [{
         type: mongoose.Types.ObjectId,
         ref: 'Coupon'
@@ -171,15 +175,15 @@ userSchema.methods.removefromCart = async function (cartItemId, size) {
 
 userSchema.methods.removeAllFromCart = async function () {
     this.cart.item = [];
-    this.cart.totalPrice = 0; 
-    return await this.save(); 
-  };
-  
+    this.cart.totalPrice = 0;
+    return await this.save();
+};
+
 
 userSchema.methods.addToWishlist = function (product) {
 
     const wishlist = this.wishlist;
-    
+
 
     const isExisting = wishlist.filter((x) => x == product);
     if (!isExisting.length) {
@@ -194,7 +198,7 @@ userSchema.methods.removefromWishlist = async function (id) {
 
     this.wishlist = this.wishlist.filter((x) => x.toString() !== id);
 
-    return await this.save(); 
+    return await this.save();
 };
 
 

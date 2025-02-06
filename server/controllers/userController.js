@@ -275,6 +275,25 @@ const removeAllFromCart = async (req, res) => {
   }
 };
 
+const deleteUser = async (req, res) => {
+  try {
+      const { _id } = req.decoded;
+      const user = await User.findById(_id);
+      if (!user) return res.status(404).json({ message: "User not found" });
+
+      user.phone = user.phone + '0000';
+      user.is_deleted = true;
+
+      await user.save();
+
+      return res.status(200).json({ message: "User marked as deleted" });
+  } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: error.message || "Something went wrong" });
+  }
+};
+
+
 
 
 module.exports = {
@@ -290,6 +309,8 @@ module.exports = {
     getWishLists,
     updateUser,
     getCartDetailsByUserId,
-    removeAllFromCart
+    removeAllFromCart,
+    deleteUser,
+
     
   }
